@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useUserStore } from '@/lib/store/userStore';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -12,58 +13,57 @@ export default function LoginPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const login = useUserStore((state) => state.login);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+        // Simulate network delay
+        setTimeout(() => {
+            login(formData.email);
 
-            const data = await response.json();
+            // Check for redirect param
+            const redirectParams = new URLSearchParams(window.location.search);
+            const redirectUrl = redirectParams.get('redirect');
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Login failed');
+            if (redirectUrl) {
+                router.push(redirectUrl);
+            } else {
+                router.push('/getaccess');
             }
 
-            // Redirect to portfolio page
-            router.push('/portfolio');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
             setLoading(false);
-        }
+        }, 1000);
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 px-4">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTItMnYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] px-4 selection:bg-nebula-blue/30">
+            {/* Ambient Background - Light Mode Match */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-[#4FACFE]/10 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#FF9E2C]/10 blur-[120px] rounded-full" />
+            </div>
 
             <div className="max-w-md w-full space-y-8 relative z-10">
-                <div className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl p-10 border border-white/20">
+                <div className="glass bg-white/70 rounded-3xl p-10 shadow-sm border border-black/5">
                     <div className="text-center mb-8">
-                        <h2 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        <h2 className="text-4xl font-bold text-[#202124] mb-2 tracking-tight">
                             Welcome Back
                         </h2>
-                        <p className="text-gray-300">Sign in to your portfolio</p>
+                        <p className="text-gray-500">Sign in to your portfolio</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
-                            <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-red-200 text-sm backdrop-blur-sm animate-pulse">
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-600 text-sm">
                                 {error}
                             </div>
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                 Email Address
                             </label>
                             <input
@@ -72,13 +72,13 @@ export default function LoginPage() {
                                 required
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200 hover:bg-white/15"
+                                className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent transition-all duration-200"
                                 placeholder="you@example.com"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
                             </label>
                             <input
@@ -87,7 +87,7 @@ export default function LoginPage() {
                                 required
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200 hover:bg-white/15"
+                                className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent transition-all duration-200"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="w-full py-3 px-4 bg-[#202124] hover:bg-black text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         >
                             {loading ? (
                                 <svg className="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -109,9 +109,9 @@ export default function LoginPage() {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-gray-300 text-sm">
+                        <p className="text-gray-500 text-sm">
                             Don't have an account?{' '}
-                            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+                            <Link href="/register" className="text-[#1A73E8] hover:text-blue-700 font-semibold transition-colors">
                                 Sign up
                             </Link>
                         </p>

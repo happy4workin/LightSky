@@ -6,31 +6,29 @@ import PortfolioView from '@/components/portfolio/PortfolioView';
 import Canvas from '@/components/editor/canvas/Canvas';
 import SearchBar from '@/components/portfolio/SearchBar';
 import { IBlock } from '@/lib/models/Portfolio';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { motion } from 'framer-motion';
+import { useUserStore } from '@/lib/store/userStore';
+import { FloatingGetAccessButton } from '@/components/portfolio/FloatingGetAccessButton';
+
 
 export default function PortfolioPage() {
     const router = useRouter();
     const [portfolio, setPortfolio] = useState<{ blocks: IBlock[]; metadata: any } | null>(null);
-    const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const { user, isAuthenticated, hasHydrated } = useUserStore();
 
     useEffect(() => {
-        fetchPortfolio();
-        fetchUser();
-    }, []);
-
-    const fetchUser = async () => {
-        try {
-            const response = await fetch('/api/auth/me');
-            if (!response.ok) {
-                router.push('/login');
-                return;
-            }
-            const data = await response.json();
-            setUser(data.user);
-        } catch (error) {
-            router.push('/login');
+        // Wait for hydration before checking auth
+        if (hasHydrated && !isAuthenticated) {
+            router.push('/login?redirect=/portfolio');
+            return;
         }
-    };
+
+        if (hasHydrated && isAuthenticated) {
+            fetchPortfolio();
+        }
+    }, [hasHydrated, isAuthenticated, router]);
 
     const fetchPortfolio = async () => {
         try {
@@ -47,82 +45,97 @@ export default function PortfolioPage() {
         }
     };
 
-    const handleLogout = async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        router.push('/login');
-    };
 
-    if (loading) {
+
+    if (!hasHydrated || loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+            <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] text-[#202124]">
                 <div className="text-center">
-                    <svg className="animate-spin h-12 w-12 mx-auto mb-4 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p className="text-gray-600">Loading portfolio...</p>
+                    <div className="w-12 h-12 border-4 border-nebula-blue/30 border-t-nebula-blue rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-[#5F6368]">Loading portfolio...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold">
-                                {user?.displayName?.charAt(0).toUpperCase() || 'U'}
-                            </div>
-                            <div>
-                                <h1 className="text-lg font-semibold text-gray-800">{user?.displayName}</h1>
-                                <p className="text-sm text-gray-500">@{user?.username}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-150"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
+        <main className="min-h-screen bg-[#F8F9FA] text-[#202124] selection:bg-nebula-blue/30 overflow-x-hidden relative">
+            {/* Floating Get Access Button */}
+            <FloatingGetAccessButton />
 
-            {/* Search Section */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-6 py-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Discover Portfolios</h2>
-                    <SearchBar />
-                </div>
+            {/* Ambient Background - Adjusted for Light Mode */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-nebula-blue/10 blur-[150px] rounded-full mix-blend-multiply opacity-60 animate-pulse-slow" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] bg-solar-flare/10 blur-[150px] rounded-full mix-blend-multiply opacity-50 animate-pulse-slow delay-1000" />
             </div>
 
-            {/* Portfolio Content */}
-            <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                        <h2 className="text-xl font-semibold text-gray-800">My Portfolio</h2>
+            <div className="relative z-10 pt-20 pb-20 px-6 max-w-7xl mx-auto">
+                {/* Header */}
+                <GlassCard className="mb-8 p-6 flex flex-row items-center justify-between gap-6 !bg-white/60 !border-black/5 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-nebula-blue to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-nebula-blue/20">
+                            {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#202124] tracking-tight">{user?.name || user?.email?.split('@')[0]}</h1>
+                            <p className="text-[#5F6368] text-sm">
+                                <span className="inline-flex items-center gap-2">
+                                    {user?.email}
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${user?.plan === 'pro' ? 'bg-purple-100 text-purple-700' :
+                                            user?.plan === 'creator' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-gray-100 text-gray-600'
+                                        }`}>
+                                        {user?.plan?.toUpperCase() || 'FREE'}
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                </GlassCard>
+
+                {/* Discovery Section */}
+                <div className="mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight text-center md:text-left text-[#202124]">
+                        Discover <span className="text-nebula-blue">Flows</span>
+                    </h2>
+                    <GlassCard className="p-8 !bg-white/60 !border-black/5">
+                        <SearchBar />
+                    </GlassCard>
+                </div>
+
+                {/* My Portfolio */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-2xl font-bold tracking-tight text-[#202124]">My Portfolio</h2>
                         <a
                             href="/portfolio/edit"
-                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            className="group flex items-center gap-2 text-nebula-blue hover:text-[#174EA6] transition-colors duration-300 font-medium"
                         >
-                            View in editor →
+                            Open Editor
+                            <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </a>
                     </div>
-                    <div className="relative min-h-[600px] w-full bg-gray-50 overflow-hidden">
-                        <Canvas
-                            blocks={portfolio?.blocks as any[] || []}
-                            selectedBlockId={null}
-                            onSelectBlock={() => { }}
-                            onUpdateBlock={() => { }}
-                            onMoveBlock={() => { }}
-                            readOnly={true}
-                        />
-                    </div>
+
+                    <GlassCard className="overflow-hidden !border-black/5 min-h-[600px] relative !bg-white/60">
+                        <div className="absolute inset-0 bg-grid-black/[0.03] -z-[1]" />
+                        {/* Mock Canvas View */}
+                        <div className="w-full h-full min-h-[600px] bg-white/40 backdrop-blur-sm">
+                            <Canvas
+                                blocks={portfolio?.blocks as any[] || []}
+                                selectedBlockId={null}
+                                onSelectBlock={() => { }}
+                                onUpdateBlock={() => { }}
+                                onMoveBlock={() => { }}
+                                readOnly={true}
+                            />
+                        </div>
+                    </GlassCard>
                 </div>
             </div>
-        </div>
+
+            {/* Footer gradient */}
+            <div className="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#F8F9FA] to-transparent pointer-events-none z-20" />
+        </main>
     );
 }

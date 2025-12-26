@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import PromptInput from '@/components/ai/PromptInput';
 import PortfolioCarousel from '@/components/ai/PortfolioCarousel';
 import { GeneratedPortfolio } from '@/lib/ai/mockGenerator';
+import { FloatingGetAccessButton } from '@/components/portfolio/FloatingGetAccessButton';
 
 export default function AIPortfolioPage() {
     const router = useRouter();
@@ -80,6 +81,9 @@ export default function AIPortfolioPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+            {/* Floating Get Access Button */}
+            <FloatingGetAccessButton />
+
             {/* Header */}
             <header className="bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
