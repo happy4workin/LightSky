@@ -16,7 +16,7 @@ interface UserState {
     hasHydrated: boolean;
     login: (email: string) => void;
     logout: () => void;
-    upgradePlan: (plan: 'creator' | 'pro') => void;
+    upgradePlan: (plan: 'free' | 'creator' | 'pro') => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -38,7 +38,7 @@ export const useUserStore = create<UserState>()(
                     isAuthenticated: true,
                 }),
             logout: () => set({ user: null, isAuthenticated: false }),
-            upgradePlan: (plan: 'creator' | 'pro') =>
+            upgradePlan: (plan: 'free' | 'creator' | 'pro') =>
                 set((state) => ({
                     user: state.user
                         ? {
