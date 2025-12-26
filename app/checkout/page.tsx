@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserStore } from '@/lib/store/userStore';
@@ -288,8 +290,8 @@ export default function CheckoutPage() {
                                     type="submit"
                                     disabled={loading}
                                     className={`w-full py-4 mt-6 text-white font-bold rounded-xl shadow-lg transform transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 ${paymentMethod === 'momo' ? 'bg-[#A50064] hover:bg-[#8F0057]' :
-                                            paymentMethod === 'debit_card' ? 'bg-green-500 hover:bg-green-600' :
-                                                'bg-nebula-blue hover:bg-blue-600'
+                                        paymentMethod === 'debit_card' ? 'bg-green-500 hover:bg-green-600' :
+                                            'bg-nebula-blue hover:bg-blue-600'
                                         }`}
                                 >
                                     {loading ? (
